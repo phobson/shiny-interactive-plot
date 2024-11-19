@@ -1,0 +1,17 @@
+name: Deploy Shiny (Production)
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]  # will go to prod
+
+jobs:
+  deploy-to-prod:
+    uses: ./.github/workflows/deploy-helper.yml
+    with:
+      which_env: prod
+    secrets:
+      app_id: ${{ secrets.SHINY_ID_PROD }}
+      SHINY_ACCOUNT: ${{ secrets.SHINY_ACCOUNT }}
+      SHINY_TOKEN: ${{ secrets.SHINY_TOKEN }}
+      SHINY_SECRET: ${{ secrets.SHINY_SECRET }}

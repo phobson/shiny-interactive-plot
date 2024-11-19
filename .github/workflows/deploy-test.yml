@@ -1,0 +1,20 @@
+name: Deploy Shiny (Testing)
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Run basic unit tests']
+    branches: [main]
+    types: completed
+
+jobs:
+  deploy-to-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/deploy-helper.yml
+    with:
+      which_env: tests
+    secrets:
+      app_id: ${{ secrets.SHINY_ID_TEST }}
+      SHINY_ACCOUNT: ${{ secrets.SHINY_ACCOUNT }}
+      SHINY_TOKEN: ${{ secrets.SHINY_TOKEN }}
+      SHINY_SECRET: ${{ secrets.SHINY_SECRET }}

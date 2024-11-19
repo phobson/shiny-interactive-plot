@@ -1,0 +1,63 @@
+name: Deploy Shiny App
+
+on:
+  workflow_call:
+    inputs:
+      which_env:
+        required: true
+        type: string
+    secrets:
+      app_id:
+        required: true
+      SHINY_ACCOUNT:
+        required: true
+      SHINY_TOKEN:
+        required: true
+      SHINY_SECRET:
+        required: true
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  build-and-deploy:
+    environment: ${{ inputs.which_env }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v4
+
+    - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 'Setup rsconnect'
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install uv
+        uv venv
+        source .venv/bin/activate
+        uv pip install rsconnect
+
+    - name: 'Write manifest'
+      shell: bash
+      run: |
+        source .venv/bin/activate
+        cd shinyapp
+        rsconnect write-manifest shiny . --entrypoint=app.py --overwrite \
+          --exclude=tests \
+          --exclude="**/__pycache__/*"
+
+    - name: 'Deploy shinyapp.io'
+      shell: bash
+      run: |
+        source .venv/bin/activate
+        cd shinyapp
+        rsconnect deploy manifest manifest.json \
+          --app-id ${{ secrets.app_id }} \
+          --account ${{ secrets.SHINY_ACCOUNT}} \
+          --token ${{ secrets.SHINY_TOKEN}} \
+          --secret ${{ secrets.SHINY_SECRET}}

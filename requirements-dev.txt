@@ -1,0 +1,11 @@
+pytest
+pytest-cov
+pytest-mpl
+playwright
+pytest-playwright
+coverage
+docopt
+ruff
+pre-commit
+isort
+rsconnect
